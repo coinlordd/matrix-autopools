@@ -29,13 +29,7 @@ interface IStrategy {
 
     event OperatorSet(address operator);
 
-    event AumFeeCollected(
-        address indexed sender,
-        uint256 totalBalanceX,
-        uint256 totalBalanceY,
-        uint256 feeX,
-        uint256 feeY
-    );
+    event AumFeeCollected(address indexed sender, uint256 totalBalanceX, uint256 totalBalanceY, uint256 feeX, uint256 feeY);
 
     event AumAnnualFeeSet(uint256 fee);
 
