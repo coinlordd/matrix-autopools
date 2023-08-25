@@ -10,10 +10,12 @@ fs_permissions = [{ access = "read", path = "./"}]
 [rpc_endpoints]
 arbitrum_one = "https://arb1.arbitrum.io/rpc"
 fantom = "https://rpc.fantom.network"
+base = "https://mainnet.base.org"
 
 [etherscan]
 arbitrum_one = { url = "https://api.arbiscan.io/api", key = "${ARBISCAN_KEY}", chain = "arbitrum" }
 fantom = { url = "https://api.ftmscan.com/api", key = "${FTMSCAN_KEY}", chain = "fantom" }
+base = { url = "https://api.basescan.org/api", key = "${BASESCAN_KEY}", chain = "base" }
 
 [fmt]
 number_underscore = "thousands"
