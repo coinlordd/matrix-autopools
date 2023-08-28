@@ -549,6 +549,9 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
 
         // Mint the liquidity tokens.
         ILBPair(pair).mint(address(this), liquidityConfigs, address(this));
+
+        // Register the deposit
+        IBaseVault(_vault()).onDepositExecutedCallback(amountX, amountY);
     }
 
     /**

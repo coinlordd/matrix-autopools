@@ -580,7 +580,19 @@ abstract contract BaseVault is Clone, ERC20Upgradeable, ReentrancyGuardUpgradeab
         queuedWithdrawals.totalAmountX = uint128(receivedX);
         queuedWithdrawals.totalAmountY = uint128(receivedY);
 
-        emit WithdrawalExecuted(round, totalQueuedShares, receivedX, receivedY);
+        emit WithdrawalExecuted(round, receivedX, receivedY, totalQueuedShares);
+    }
+
+    function onDepositExecutedCallback(uint256 amountX, uint256 amountY) public virtual override nonReentrant {
+        // Check that the caller is the strategy, it also checks that the strategy was set.
+        address strategy = address(_strategy);
+        if (strategy != msg.sender) revert BaseVault__OnlyStrategy();
+
+        // Get the current round number (a withdrawal bumps us into a new round)
+        uint256 round = _queuedWithdrawalsByRound.length - 1;
+
+        // Emit the event
+        emit DepositExecuted(round, amountX, amountY);
     }
 
     /**
