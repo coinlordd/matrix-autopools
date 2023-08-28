@@ -54,7 +54,7 @@ interface IBaseVault is IERC20Upgradeable {
 
     event WithdrawalRedeemed(address indexed sender, address indexed recipient, uint256 indexed round, uint256 shares, uint256 amountX, uint256 amountY);
 
-    event WithdrawalExecuted(uint256 indexed round, uint256 indexed amountX, uint256 indexed amountY, uint256 totalQueuedQhares);
+    event WithdrawalExecuted(uint256 indexed round, uint256 indexed amountX, uint256 indexed amountY, uint256 totalQueuedShares);
 
     event StrategySet(IStrategy strategy);
 
