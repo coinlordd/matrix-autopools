@@ -12,7 +12,7 @@ import {Strategy} from "../../src/Strategy.sol";
 import {IVaultFactory} from "../../src/interfaces/IVaultFactory.sol";
 
 contract DeployCore is Script {
-    address constant WNATIVE = 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83; // wFTM
+    address private constant WNATIVE = 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83; // wFTM
 
     struct Contracts {
         address factoryImplementation;

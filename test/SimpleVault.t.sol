@@ -78,7 +78,8 @@ contract SimpleVaultTest is TestHelper {
         deal(wavax, strategy, 4e18);
         deal(usdc, strategy, 80e6);
 
-        bytes memory distributions = abi.encodePacked(uint64(0), uint64(0.5e18), uint64(0.5e18), uint64(0.5e18), uint64(0.5e18), uint64(0));
+        bytes memory distributions =
+            abi.encodePacked(uint64(0), uint64(0.5e18), uint64(0.5e18), uint64(0.5e18), uint64(0.5e18), uint64(0));
 
         IStrategy(strategy).rebalance((1 << 23) - 1, (1 << 23) + 1, 1 << 23, 1 << 23, 4e18, 80e6, distributions);
         vm.stopPrank();
@@ -249,12 +250,14 @@ contract SimpleVaultTest is TestHelper {
         uint256 balanceAfter = bob.balance;
 
         assertEq(balanceAfter, balance - 1e18, "test_DepositNative::1");
-        assertEq(ISimpleVault(vault).balanceOf(alice) + 1e6, ISimpleVault(vault).balanceOf(bob), "test_DepositNative::2");
+        assertEq(
+            ISimpleVault(vault).balanceOf(alice) + 1e6, ISimpleVault(vault).balanceOf(bob), "test_DepositNative::2"
+        );
     }
 
     function test_DepositNativeAvaxIsY() external {
         vm.prank(owner);
-        (address nativeIsYVault, ) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
+        (address nativeIsYVault,) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
 
         depositNativeToVault(nativeIsYVault, alice, 1e18, 1e18);
 
@@ -264,7 +267,11 @@ contract SimpleVaultTest is TestHelper {
         vm.stopPrank();
 
         assertEq(balanceAfter, balance - 1e18, "test_DepositNative::1");
-        assertEq(ISimpleVault(nativeIsYVault).balanceOf(alice) + 1e6, ISimpleVault(nativeIsYVault).balanceOf(bob), "test_DepositNative::2");
+        assertEq(
+            ISimpleVault(nativeIsYVault).balanceOf(alice) + 1e6,
+            ISimpleVault(nativeIsYVault).balanceOf(bob),
+            "test_DepositNative::2"
+        );
     }
 
     function test_DepositZeroNativeX() external {
@@ -287,7 +294,7 @@ contract SimpleVaultTest is TestHelper {
 
     function test_DepositZeroNativeY() external {
         vm.prank(owner);
-        (address vault, ) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
+        (address vault,) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
 
         depositNativeToVault(vault, alice, 1e18, 0);
 
@@ -298,7 +305,7 @@ contract SimpleVaultTest is TestHelper {
 
     function test_DepositZeroTokenNativeIsY() external {
         vm.prank(owner);
-        (address vault, ) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
+        (address vault,) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
 
         depositNativeToVault(vault, alice, 0, 1e18);
 
@@ -309,13 +316,13 @@ contract SimpleVaultTest is TestHelper {
 
     function test_revert_DepositNative() external {
         vm.prank(owner);
-        (address noNativeVault, ) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(usdt_usdc_1bp));
+        (address noNativeVault,) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(usdt_usdc_1bp));
 
         vm.expectRevert(IBaseVault.BaseVault__NoNativeToken.selector);
         this.depositNativeToVault(noNativeVault, alice, 1e18, 1e18);
 
         vm.prank(owner);
-        (address nativeIsYVault, ) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
+        (address nativeIsYVault,) = factory.createSimpleVaultAndDefaultStrategy(ILBPair(joe_wavax_15bp));
 
         vm.expectRevert(IBaseVault.BaseVault__InvalidNativeAmount.selector);
         ISimpleVault(nativeIsYVault).depositNative{value: 1e18}(1e18, 1e18 + 1);
@@ -416,7 +423,7 @@ contract SimpleVaultTest is TestHelper {
 
     function test_ReceiveNativeFromWNative() external {
         vm.prank(wavax);
-        (bool s, ) = vault.call{value: 1e18}("");
+        (bool s,) = vault.call{value: 1e18}("");
         require(s);
     }
 
@@ -425,7 +432,7 @@ contract SimpleVaultTest is TestHelper {
         payable(vault).transfer(1e18);
 
         vm.expectRevert(IBaseVault.BaseVault__OnlyWNative.selector);
-        (bool s, ) = vault.call{value: 1e18}("");
+        (bool s,) = vault.call{value: 1e18}("");
         require(s);
     }
 

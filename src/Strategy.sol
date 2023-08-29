@@ -217,11 +217,8 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
         address vault = _vault();
 
         // Withdraw all the tokens from the LB pool and return the amounts and the queued withdrawals.
-        (uint256 amountX, uint256 amountY, uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY) = _withdraw(
-            _lowerRange,
-            _upperRange,
-            IBaseVault(vault).totalSupply()
-        );
+        (uint256 amountX, uint256 amountY, uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY) =
+            _withdraw(_lowerRange, _upperRange, IBaseVault(vault).totalSupply());
 
         // Execute the queued withdrawals and send the tokens to the vault.
         uint256 totalBalanceX = amountX + queuedAmountX;
@@ -291,11 +288,17 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
      * @param desc The swap description.
      * @param data The data to be passed to the 1inch router.
      */
-    function swap(address executor, IOneInchRouter.SwapDescription calldata desc, bytes calldata data) external override onlyOperators {
+    function swap(address executor, IOneInchRouter.SwapDescription calldata desc, bytes calldata data)
+        external
+        override
+        onlyOperators
+    {
         IERC20Upgradeable tokenX = _tokenX();
         IERC20Upgradeable tokenY = _tokenY();
 
-        if ((desc.srcToken != tokenX || desc.dstToken != tokenY) && (desc.srcToken != tokenY || desc.dstToken != tokenX)) {
+        if (
+            (desc.srcToken != tokenX || desc.dstToken != tokenY) && (desc.srcToken != tokenY || desc.dstToken != tokenX)
+        ) {
             revert Strategy__InvalidToken();
         }
 
@@ -391,7 +394,7 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
 
         // Get the ids from lower to upper (inclusive).
         ids = new uint256[](delta);
-        for (uint256 i; i < delta; ) {
+        for (uint256 i; i < delta;) {
             ids[i] = lower + i;
 
             unchecked {
@@ -440,12 +443,11 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
      * @param desiredActiveId The desired active id.
      * @param slippageActiveId The allowed slippage of the active id.
      */
-    function _adjustRange(
-        uint24 newLower,
-        uint24 newUpper,
-        uint24 desiredActiveId,
-        uint24 slippageActiveId
-    ) internal view returns (uint24 activeId, uint24, uint24) {
+    function _adjustRange(uint24 newLower, uint24 newUpper, uint24 desiredActiveId, uint24 slippageActiveId)
+        internal
+        view
+        returns (uint24 activeId, uint24, uint24)
+    {
         activeId = _getActiveId();
 
         // If the active id is different from the desired active id, adjust the range.
@@ -486,7 +488,11 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
      * distributions = abi.encodePacked(uint64(distribX0), uint64(distribY0), uint64(distribX1), uint64(distribY1), ...)
      * @return liquidityConfigs The liquidity configurations for the given range.
      */
-    function _getLiquidityConfigs(uint24 idLower, uint24 idUpper, bytes calldata distributions) internal pure returns (bytes32[] memory liquidityConfigs) {
+    function _getLiquidityConfigs(uint24 idLower, uint24 idUpper, bytes calldata distributions)
+        internal
+        pure
+        returns (bytes32[] memory liquidityConfigs)
+    {
         if (idUpper == 0 || idLower > idUpper) revert Strategy__InvalidRange();
         if (distributions.length != (idUpper - idLower + 1) * _PACKED_DISTRIBS_SIZE) revert Strategy__InvalidLength();
 
@@ -543,7 +549,13 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
      * @param amountX The amount of token X to deposit.
      * @param amountY The amount of token Y to deposit.
      */
-    function _depositToLB(uint24 lower, uint24 upper, bytes32[] memory liquidityConfigs, uint256 amountX, uint256 amountY) internal {
+    function _depositToLB(
+        uint24 lower,
+        uint24 upper,
+        bytes32[] memory liquidityConfigs,
+        uint256 amountX,
+        uint256 amountY
+    ) internal {
         // Set the range, will check if the range is valid.
         _setRange(lower, upper);
 
@@ -573,14 +585,21 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
      */
     function _withdrawAndApplyAumAnnualFee()
         internal
-        returns (uint256 totalBalanceX, uint256 totalBalanceY, uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY)
+        returns (
+            uint256 totalBalanceX,
+            uint256 totalBalanceY,
+            uint256 queuedShares,
+            uint256 queuedAmountX,
+            uint256 queuedAmountY
+        )
     {
         // Get the range and reset it.
         (uint24 lowerRange, uint24 upperRange) = (_lowerRange, _upperRange);
         if (upperRange > 0) _resetRange();
 
         // Get the total balance of the strategy and the queued shares and amounts.
-        (totalBalanceX, totalBalanceY, queuedShares, queuedAmountX, queuedAmountY) = _withdraw(lowerRange, upperRange, IBaseVault(_vault()).totalSupply());
+        (totalBalanceX, totalBalanceY, queuedShares, queuedAmountX, queuedAmountY) =
+            _withdraw(lowerRange, upperRange, IBaseVault(_vault()).totalSupply());
 
         // Get the total withdrawn balance of the strategy.
         totalBalanceX += queuedAmountX;
@@ -610,13 +629,15 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
 
                 if (feeX > 0) {
                     // Adjusts the queued amount of token X to account for the fee.
-                    queuedAmountX = queuedAmountX == 0 ? 0 : queuedAmountX - feeX.mulDivRoundUp(queuedAmountX, totalBalanceX);
+                    queuedAmountX =
+                        queuedAmountX == 0 ? 0 : queuedAmountX - feeX.mulDivRoundUp(queuedAmountX, totalBalanceX);
 
                     _tokenX().safeTransfer(feeRecipient, feeX);
                 }
                 if (feeY > 0) {
                     // Adjusts the queued amount of token Y to account for the fee.
-                    queuedAmountY = queuedAmountY == 0 ? 0 : queuedAmountY - feeY.mulDivRoundUp(queuedAmountY, totalBalanceY);
+                    queuedAmountY =
+                        queuedAmountY == 0 ? 0 : queuedAmountY - feeY.mulDivRoundUp(queuedAmountY, totalBalanceY);
 
                     _tokenY().safeTransfer(feeRecipient, feeY);
                 }
@@ -649,11 +670,10 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
      * @return queuedAmountX The amount of token X withdrawn from the queued withdraws.
      * @return queuedAmountY The amount of token Y withdrawn from the queued withdraws.
      */
-    function _withdraw(
-        uint24 removedLower,
-        uint24 removedUpper,
-        uint256 totalShares
-    ) internal returns (uint256 amountX, uint256 amountY, uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY) {
+    function _withdraw(uint24 removedLower, uint24 removedUpper, uint256 totalShares)
+        internal
+        returns (uint256 amountX, uint256 amountY, uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY)
+    {
         // Get the amount of shares queued for withdrawal.
         queuedShares = IBaseVault(_vault()).getCurrentTotalQueuedWithdrawal();
 
@@ -677,7 +697,10 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
      * @return balanceX The amount of token X in the strategy.
      * @return balanceY The amount of token Y in the strategy.
      */
-    function _withdrawFromLB(uint24 removedLower, uint24 removedUpper) internal returns (uint256 balanceX, uint256 balanceY) {
+    function _withdrawFromLB(uint24 removedLower, uint24 removedUpper)
+        internal
+        returns (uint256 balanceX, uint256 balanceY)
+    {
         uint256 length;
 
         // Get the pair address and the delta between the upper and lower range.
@@ -689,7 +712,7 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
 
         if (removedUpper > 0) {
             // Get the ids and amounts of the tokens to withdraw.
-            for (uint256 i; i < delta; ) {
+            for (uint256 i; i < delta;) {
                 uint256 id = removedLower + i;
                 uint256 amount = ILBToken(pair).balanceOf(address(this), id);
 

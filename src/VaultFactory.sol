@@ -191,7 +191,7 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
             revert VaultFactory__InvalidLength();
         }
 
-        for (uint256 i; i < vaults.length; ) {
+        for (uint256 i; i < vaults.length;) {
             if (withdrawNative[i]) IBaseVault(vaults[i]).redeemQueuedWithdrawalNative(rounds[i], msg.sender);
             else IBaseVault(vaults[i]).redeemQueuedWithdrawal(rounds[i], msg.sender);
 
@@ -215,7 +215,11 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
      * @param sType The type of the strategy. (0: DefaultStrategy)
      * @param strategyImplementation The address of the strategy implementation.
      */
-    function setStrategyImplementation(StrategyType sType, address strategyImplementation) external override onlyOwner {
+    function setStrategyImplementation(StrategyType sType, address strategyImplementation)
+        external
+        override
+        onlyOwner
+    {
         _setStrategyImplementation(sType, strategyImplementation);
     }
 
@@ -270,11 +274,12 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
      * @return vault The address of the new vault.
      * @return strategy The address of the new strategy.
      */
-    function createOracleVaultAndDefaultStrategy(
-        ILBPair lbPair,
-        IAggregatorV3 dataFeedX,
-        IAggregatorV3 dataFeedY
-    ) external override onlyOwner returns (address vault, address strategy) {
+    function createOracleVaultAndDefaultStrategy(ILBPair lbPair, IAggregatorV3 dataFeedX, IAggregatorV3 dataFeedY)
+        external
+        override
+        onlyOwner
+        returns (address vault, address strategy)
+    {
         if (dataFeedX.decimals() != dataFeedY.decimals()) revert VaultFactory__InvalidDecimals();
 
         address tokenX = address(lbPair.getTokenX());
@@ -293,9 +298,12 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
      * @return vault The address of the new vault.
      * @return strategy The address of the new strategy.
      */
-    function createSimpleVaultAndDefaultStrategy(
-        ILBPair lbPair
-    ) external override onlyOwner returns (address vault, address strategy) {
+    function createSimpleVaultAndDefaultStrategy(ILBPair lbPair)
+        external
+        override
+        onlyOwner
+        returns (address vault, address strategy)
+    {
         address tokenX = address(lbPair.getTokenX());
         address tokenY = address(lbPair.getTokenY());
 
@@ -324,11 +332,12 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
      * @param dataFeedY The address of the data feed for token Y.
      * @return vault The address of the new vault.
      */
-    function createOracleVault(
-        ILBPair lbPair,
-        IAggregatorV3 dataFeedX,
-        IAggregatorV3 dataFeedY
-    ) external override onlyOwner returns (address vault) {
+    function createOracleVault(ILBPair lbPair, IAggregatorV3 dataFeedX, IAggregatorV3 dataFeedY)
+        external
+        override
+        onlyOwner
+        returns (address vault)
+    {
         address tokenX = address(lbPair.getTokenX());
         address tokenY = address(lbPair.getTokenY());
 
@@ -417,12 +426,11 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
      * @param recipient The address of the recipient.
      * @param amount The amount of tokens to recover.
      */
-    function recoverERC20(
-        IBaseVault vault,
-        IERC20Upgradeable token,
-        address recipient,
-        uint256 amount
-    ) external override onlyOwner {
+    function recoverERC20(IBaseVault vault, IERC20Upgradeable token, address recipient, uint256 amount)
+        external
+        override
+        onlyOwner
+    {
         vault.recoverERC20(token, recipient, amount);
     }
 
@@ -497,15 +505,8 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
         uint8 decimalsX = IERC20MetadataUpgradeable(tokenX).decimals();
         uint8 decimalsY = IERC20MetadataUpgradeable(tokenY).decimals();
 
-        bytes memory vaultImmutableData = abi.encodePacked(
-            lbPair,
-            tokenX,
-            tokenY,
-            decimalsX,
-            decimalsY,
-            dataFeedX,
-            dataFeedY
-        );
+        bytes memory vaultImmutableData =
+            abi.encodePacked(lbPair, tokenX, tokenY, decimalsX, decimalsY, dataFeedX, dataFeedY);
 
         vault = _createVault(VaultType.Oracle, lbPair, tokenX, tokenY, vaultImmutableData);
 
@@ -551,12 +552,10 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
      * @param tokenX The address of token X.
      * @param tokenY The address of token Y.
      */
-    function _createDefaultStrategy(
-        address vault,
-        ILBPair lbPair,
-        address tokenX,
-        address tokenY
-    ) internal returns (address strategy) {
+    function _createDefaultStrategy(address vault, ILBPair lbPair, address tokenX, address tokenY)
+        internal
+        returns (address strategy)
+    {
         bytes memory strategyImmutableData = abi.encodePacked(vault, lbPair, tokenX, tokenY);
 
         return _createStrategy(StrategyType.Default, address(vault), lbPair, strategyImmutableData);
@@ -569,12 +568,11 @@ contract VaultFactory is IVaultFactory, Ownable2StepUpgradeable {
      * @param lbPair The address of the LBPair.
      * @param strategyImmutableData The immutable data to pass to the strategy.
      */
-    function _createStrategy(
-        StrategyType sType,
-        address vault,
-        ILBPair lbPair,
-        bytes memory strategyImmutableData
-    ) internal isValidType(uint8(sType)) returns (address strategy) {
+    function _createStrategy(StrategyType sType, address vault, ILBPair lbPair, bytes memory strategyImmutableData)
+        internal
+        isValidType(uint8(sType))
+        returns (address strategy)
+    {
         address strategyImplementation = _strategyImplementation[sType];
         if (strategyImplementation == address(0)) revert VaultFactory__StrategyImplementationNotSet(sType);
 

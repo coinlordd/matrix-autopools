@@ -82,7 +82,7 @@ contract OracleVault is BaseVault, IOracleVault {
      * @return uintPrice The oracle latest answer.
      */
     function _getOraclePrice(IAggregatorV3 dataFeed) internal view returns (uint256 uintPrice) {
-        (, int256 price, , uint256 updatedAt, ) = dataFeed.latestRoundData();
+        (, int256 price,, uint256 updatedAt,) = dataFeed.latestRoundData();
 
         if (updatedAt == 0 || updatedAt + 24 hours < block.timestamp) revert OracleVault__StalePrice();
         if (price <= 0 || (uintPrice = uint256(price)) > type(uint96).max) revert OracleVault__InvalidPrice();
@@ -114,11 +114,12 @@ contract OracleVault is BaseVault, IOracleVault {
      * @return effectiveX The effective amount of token X that will be deposited.
      * @return effectiveY The effective amount of token Y that will be deposited.
      */
-    function _previewShares(
-        IStrategy strategy,
-        uint256 amountX,
-        uint256 amountY
-    ) internal view override returns (uint256 shares, uint256 effectiveX, uint256 effectiveY) {
+    function _previewShares(IStrategy strategy, uint256 amountX, uint256 amountY)
+        internal
+        view
+        override
+        returns (uint256 shares, uint256 effectiveX, uint256 effectiveY)
+    {
         if (amountX == 0 && amountY == 0) return (0, 0, 0);
 
         uint256 price = _getPrice();

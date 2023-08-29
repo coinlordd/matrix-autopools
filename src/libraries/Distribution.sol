@@ -27,12 +27,7 @@ library Distribution {
      * @return distributionX The distribution of token X.
      * @return distributionY The distribution of token Y.
      */
-    function getDistributions(
-        uint256[] memory desiredL,
-        uint256 compositionFactor,
-        uint256 price,
-        uint256 index
-    )
+    function getDistributions(uint256[] memory desiredL, uint256 compositionFactor, uint256 price, uint256 index)
         internal
         pure
         returns (uint256 amountX, uint256 amountY, uint256[] memory distributionX, uint256[] memory distributionY)
@@ -73,7 +68,7 @@ library Distribution {
         uint256 end,
         bool endIsActive
     ) internal pure returns (uint256) {
-        for (uint256 i; i < end; ) {
+        for (uint256 i; i < end;) {
             uint256 amountInY = desiredL[i];
             if (amountInY > type(uint128).max) revert Distribution__AmountTooHigh();
 
@@ -108,7 +103,7 @@ library Distribution {
         uint256 start,
         bool startIsActive
     ) internal pure returns (uint256) {
-        for (uint256 i = startIsActive ? start + 1 : start; i < desiredL.length; ) {
+        for (uint256 i = startIsActive ? start + 1 : start; i < desiredL.length;) {
             uint256 amountInY = desiredL[i];
             uint256 amountInX = (amountInY << OFFSET) / price;
 
@@ -135,14 +130,12 @@ library Distribution {
      * @param start The index of the first amount to compute.
      * @param end The index of the last amount to compute.
      */
-    function computeDistribution(
-        uint256[] memory amounts,
-        uint256 totalAmount,
-        uint256 start,
-        uint256 end
-    ) internal pure {
+    function computeDistribution(uint256[] memory amounts, uint256 totalAmount, uint256 start, uint256 end)
+        internal
+        pure
+    {
         if (totalAmount > 0) {
-            for (uint256 i = start; i < end; ) {
+            for (uint256 i = start; i < end;) {
                 amounts[i] = (amounts[i] * PRECISION) / totalAmount;
 
                 unchecked {

@@ -42,11 +42,12 @@ contract SimpleVault is BaseVault, ISimpleVault {
      * @return effectiveX The effective amount of token X that will be deposited.
      * @return effectiveY The effective amount of token Y that will be deposited.
      */
-    function _previewShares(
-        IStrategy strategy,
-        uint256 amountX,
-        uint256 amountY
-    ) internal view override returns (uint256 shares, uint256 effectiveX, uint256 effectiveY) {
+    function _previewShares(IStrategy strategy, uint256 amountX, uint256 amountY)
+        internal
+        view
+        override
+        returns (uint256 shares, uint256 effectiveX, uint256 effectiveY)
+    {
         if (amountX == 0 && amountY == 0) return (0, 0, 0);
         if (amountX > type(uint128).max || amountY > type(uint128).max) revert SimpleVault__AmountsOverflow();
 

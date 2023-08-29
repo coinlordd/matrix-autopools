@@ -102,19 +102,15 @@ interface IVaultFactory {
 
     function setFeeRecipient(address feeRecipient) external;
 
-    function createOracleVaultAndDefaultStrategy(
-        ILBPair lbPair,
-        IAggregatorV3 dataFeedX,
-        IAggregatorV3 dataFeedY
-    ) external returns (address vault, address strategy);
+    function createOracleVaultAndDefaultStrategy(ILBPair lbPair, IAggregatorV3 dataFeedX, IAggregatorV3 dataFeedY)
+        external
+        returns (address vault, address strategy);
 
     function createSimpleVaultAndDefaultStrategy(ILBPair lbPair) external returns (address vault, address strategy);
 
-    function createOracleVault(
-        ILBPair lbPair,
-        IAggregatorV3 dataFeedX,
-        IAggregatorV3 dataFeedY
-    ) external returns (address vault);
+    function createOracleVault(ILBPair lbPair, IAggregatorV3 dataFeedX, IAggregatorV3 dataFeedY)
+        external
+        returns (address vault);
 
     function createSimpleVault(ILBPair lbPair) external returns (address vault);
 
