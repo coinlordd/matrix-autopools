@@ -46,15 +46,17 @@ interface IBaseVault is IERC20Upgradeable {
 
     event Deposited(address indexed user, uint256 amountX, uint256 amountY, uint256 shares);
 
-    event DepositExecuted(uint256 indexed round, uint256 indexed amountX, uint256 indexed amountY);
-
     event WithdrawalQueued(address indexed sender, address indexed user, uint256 indexed round, uint256 shares);
 
     event WithdrawalCancelled(address indexed sender, address indexed recipient, uint256 indexed round, uint256 shares);
 
     event WithdrawalRedeemed(address indexed sender, address indexed recipient, uint256 indexed round, uint256 shares, uint256 amountX, uint256 amountY);
 
-    event WithdrawalExecuted(uint256 indexed round, uint256 indexed amountX, uint256 indexed amountY, uint256 totalQueuedShares);
+    event WithdrawalExecuted(uint256 indexed round, uint256 totalQueuedShares, uint256 amountX, uint256 amountY);
+
+    event StrategyDeposited(uint256 indexed round, uint256 indexed amountX, uint256 indexed amountY);
+
+    event StrategyWithdrawal(uint256 indexed round, uint256 indexed amountX, uint256 indexed amountY);
 
     event StrategySet(IStrategy strategy);
 
@@ -126,9 +128,9 @@ interface IBaseVault is IERC20Upgradeable {
 
     function emergencyWithdraw() external;
 
-    function executeQueuedWithdrawals() external;
+    function executeQueuedWithdrawals(uint256 totalBalanceX, uint256 totalBalanceY) external;
 
-    function onDepositExecutedCallback(uint256 amountX, uint256 amountY) external;
+    function strategyDepositedCallback(uint256 amountX, uint256 amountY) external;
 
     function initialize(string memory name, string memory symbol) external;
 

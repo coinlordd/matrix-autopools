@@ -224,7 +224,9 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
         );
 
         // Execute the queued withdrawals and send the tokens to the vault.
-        _transferAndExecuteQueuedAmounts(queuedShares, queuedAmountX, queuedAmountY);
+        uint256 totalBalanceX = amountX + queuedAmountX;
+        uint256 totalBalanceY = amountY + queuedAmountY;
+        _transferAndExecuteQueuedAmounts(totalBalanceX, totalBalanceY, queuedShares, queuedAmountX, queuedAmountY);
 
         // Send the tokens to the vault.
         _tokenX().safeTransfer(vault, amountX);
@@ -256,10 +258,16 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
         {
             // Withdraw all the tokens from the LB pool and return the amounts and the queued withdrawals.
             // It will also charge the AUM annual fee based on the last time a rebalance was executed.
-            (uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY) = _withdrawAndApplyAumAnnualFee();
+            (
+                uint256 totalBalanceX,
+                uint256 totalBalanceY,
+                uint256 queuedShares,
+                uint256 queuedAmountX,
+                uint256 queuedAmountY
+            ) = _withdrawAndApplyAumAnnualFee();
 
             // Execute the queued withdrawals and send the tokens to the vault.
-            _transferAndExecuteQueuedAmounts(queuedShares, queuedAmountX, queuedAmountY);
+            _transferAndExecuteQueuedAmounts(totalBalanceX, totalBalanceY, queuedShares, queuedAmountX, queuedAmountY);
         }
 
         // Check if the operator wants to deposit tokens.
@@ -551,28 +559,30 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
         ILBPair(pair).mint(address(this), liquidityConfigs, address(this));
 
         // Register the deposit
-        IBaseVault(_vault()).onDepositExecutedCallback(amountX, amountY);
+        IBaseVault(_vault()).strategyDepositedCallback(amountX, amountY);
     }
 
     /**
      * @dev Withdraws tokens from the pair and applies the AUM annual fee. This function will also reset the range.
      * Will never charge for more than a day of AUM fees, even if the strategy has not been rebalanced for a longer period.
+     * @return totalBalanceX The amount of token X withdrawn from the LB pool.
+     * @return totalBalanceY The amount of token Y withdrawn from the LB pool.
      * @return queuedShares The amount of shares that were queued for withdrawal.
      * @return queuedAmountX The amount of token X that was queued for withdrawal.
      * @return queuedAmountY The amount of token Y that was queued for withdrawal.
      */
-    function _withdrawAndApplyAumAnnualFee() internal returns (uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY) {
+    function _withdrawAndApplyAumAnnualFee()
+        internal
+        returns (uint256 totalBalanceX, uint256 totalBalanceY, uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY)
+    {
         // Get the range and reset it.
         (uint24 lowerRange, uint24 upperRange) = (_lowerRange, _upperRange);
         if (upperRange > 0) _resetRange();
 
         // Get the total balance of the strategy and the queued shares and amounts.
-        uint256 totalBalanceX;
-        uint256 totalBalanceY;
-
         (totalBalanceX, totalBalanceY, queuedShares, queuedAmountX, queuedAmountY) = _withdraw(lowerRange, upperRange, IBaseVault(_vault()).totalSupply());
 
-        // Get the total balance of the strategy.
+        // Get the total withdrawn balance of the strategy.
         totalBalanceX += queuedAmountX;
         totalBalanceY += queuedAmountY;
 
@@ -581,7 +591,7 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
         _lastRebalance = block.timestamp.safe64();
 
         // If the total balance is 0, early return to not charge the AUM annual fee nor update it.
-        if (totalBalanceX == 0 && totalBalanceY == 0) return (queuedShares, queuedAmountX, queuedAmountY);
+        if (totalBalanceX == 0 && totalBalanceY == 0) return (0, 0, queuedShares, queuedAmountX, queuedAmountY);
 
         // Apply the AUM annual fee
         if (lastRebalance < block.timestamp) {
@@ -719,11 +729,19 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
 
     /**
      * @dev Transfers the queued withdraws to the vault and calls the executeQueuedWithdrawals function.
+     * @param totalBalanceX The amount of token X withdrawn from the LB pool.
+     * @param totalBalanceY The amount of token Y withdrawn from the LB pool.
      * @param queuedShares The amount of shares withdrawn from the queued withdraws.
      * @param queuedAmountX The amount of token X withdrawn from the queued withdraws.
      * @param queuedAmountY The amount of token Y withdrawn from the queued withdraws.
      */
-    function _transferAndExecuteQueuedAmounts(uint256 queuedShares, uint256 queuedAmountX, uint256 queuedAmountY) private {
+    function _transferAndExecuteQueuedAmounts(
+        uint256 totalBalanceX,
+        uint256 totalBalanceY,
+        uint256 queuedShares,
+        uint256 queuedAmountX,
+        uint256 queuedAmountY
+    ) private {
         if (queuedShares > 0) {
             address vault = _vault();
 
@@ -731,7 +749,7 @@ contract Strategy is Clone, ReentrancyGuardUpgradeable, IStrategy {
             if (queuedAmountX > 0) _tokenX().safeTransfer(vault, queuedAmountX);
             if (queuedAmountY > 0) _tokenY().safeTransfer(vault, queuedAmountY);
 
-            IBaseVault(vault).executeQueuedWithdrawals();
+            IBaseVault(vault).executeQueuedWithdrawals(totalBalanceX, totalBalanceY);
         }
     }
 }

@@ -547,7 +547,7 @@ abstract contract BaseVault is Clone, ERC20Upgradeable, ReentrancyGuardUpgradeab
      * total amount of tokens in the vault and increase the round.
      * @dev Only the strategy can call this function.
      */
-    function executeQueuedWithdrawals() public virtual override nonReentrant {
+    function executeQueuedWithdrawals(uint256 totalBalanceX, uint256 totalBalanceY) public virtual override nonReentrant {
         // Check that the caller is the strategy, it also checks that the strategy was set.
         address strategy = address(_strategy);
         if (strategy != msg.sender) revert BaseVault__OnlyStrategy();
@@ -580,19 +580,20 @@ abstract contract BaseVault is Clone, ERC20Upgradeable, ReentrancyGuardUpgradeab
         queuedWithdrawals.totalAmountX = uint128(receivedX);
         queuedWithdrawals.totalAmountY = uint128(receivedY);
 
-        emit WithdrawalExecuted(round, receivedX, receivedY, totalQueuedShares);
+        emit WithdrawalExecuted(round, totalQueuedShares, receivedX, receivedY);
+        emit StrategyWithdrawal(round, totalBalanceX, totalBalanceY);
     }
 
-    function onDepositExecutedCallback(uint256 amountX, uint256 amountY) public virtual override nonReentrant {
+    function strategyDepositedCallback(uint256 amountX, uint256 amountY) public virtual override nonReentrant {
         // Check that the caller is the strategy, it also checks that the strategy was set.
         address strategy = address(_strategy);
         if (strategy != msg.sender) revert BaseVault__OnlyStrategy();
 
-        // Get the current round number (a withdrawal bumps us into a new round)
+        // Get the current round number
         uint256 round = _queuedWithdrawalsByRound.length - 1;
 
         // Emit the event
-        emit DepositExecuted(round, amountX, amountY);
+        emit StrategyDeposited(round, amountX, amountY);
     }
 
     /**
