@@ -880,7 +880,7 @@ abstract contract BaseVault is Clone, ERC20Upgradeable, ReentrancyGuardUpgradeab
         // Mint the shares
         _mint(msg.sender, shares);
 
-        emit Deposited(msg.sender, effectiveX, effectiveY, shares);
+        emit Deposited(tx.origin, effectiveX, effectiveY, shares);
     }
 
     /**
