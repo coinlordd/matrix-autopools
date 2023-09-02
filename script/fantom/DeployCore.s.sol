@@ -2,7 +2,6 @@
 pragma solidity 0.8.10;
 
 import {Script} from "forge-std/Script.sol";
-import {console} from "forge-std/Console.sol";
 import {TransparentUpgradeableProxy} from "openzeppelin/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {ProxyAdmin} from "openzeppelin/proxy/transparent/ProxyAdmin.sol";
 import {VaultFactory} from "../../src/VaultFactory.sol";
@@ -55,13 +54,5 @@ contract DeployCore is Script {
 
         // Stop broadcasting the transaction to the network.
         vm.stopBroadcast();
-
-        // Log the addresses of the deployed contracts.
-        console.log("factoryImplementation", contracts.factoryImplementation);
-        console.log("oracleVaultImplementation", contracts.oracleVaultImplementation);
-        console.log("simpleVaultImplementation", contracts.simpleVaultImplementation);
-        console.log("strategyImplementation", contracts.strategyImplementation);
-        console.log("proxyAdmin", contracts.proxyAdmin);
-        console.log("factory", contracts.factory);
     }
 }
